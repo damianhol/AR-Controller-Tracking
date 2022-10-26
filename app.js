@@ -1,9 +1,9 @@
-import * as THREE from './libs/three/three.module.js';
-import { OrbitControls } from './libs/three/jsm/OrbitControls.js';
-import { GLTFLoader } from './libs/three/jsm/GLTFLoader.js';
-import { Stats } from './libs/stats.module.js';
-import { CanvasUI } from './libs/CanvasUI.js'
-import { ARButton } from './libs/ARButton.js';
+import * as THREE from '../../libs/three/three.module.js';
+import { OrbitControls } from '../../libs/three/jsm/OrbitControls.js';
+import { GLTFLoader } from '../../libs/three/jsm/GLTFLoader.js';
+import { Stats } from '../../libs/stats.module.js';
+import { CanvasUI } from '../../libs/CanvasUI.js'
+import { ARButton } from '../../libs/ARButton.js';
 import {
 	Constants as MotionControllerConstants,
 	fetchProfile
@@ -95,7 +95,6 @@ class App{
             msg: "controller"
         }
         
-        //new instance of canvas UI class
         const ui = new CanvasUI( content, config );
         ui.mesh.material.opacity = 0.7;
         
@@ -133,25 +132,22 @@ class App{
         }
         
         function onSessionStart(){
-            //posision CanvasUI and add it to the camera so it moves as the camera moves
-            self.ui.mesh.position.set(0, -0.5, -1.1);
-            self.camera.add(self.ui.mesh);
-
+            self.ui.mesh.position.set( 0, -0.5, -1.1 );
+            self.camera.add( self.ui.mesh );
         }
         
         function onSessionEnd(){
-            self.camera.remove(self.ui.mesh);
+            self.camera.remove( self.ui.mesh );
         }
-        // canvasUI
-        // make stop AR button  appear during AR session + when we start a new session body DOM will be overlayed over the camera
+
         const btn = new ARButton( this.renderer, { onSessionStart, onSessionEnd, sessionInit: { optionalFeatures: [ 'dom-overlay' ], domOverlay: { root: document.body } } } ); 
         
-        const controller = this.renderer.xr.getController(0);
-        controller.addEventListener('connecter', onConnected)
-
-        this.scene.add(controller);
+        const controller = this.renderer.xr.getController( 0 );
+        controller.addEventListener( 'connected', onConnected );
+        
+        this.scene.add( controller );
         this.controller = controller;
-
+        
         this.renderer.setAnimationLoop( this.render.bind(this) );
     }
     
@@ -162,7 +158,7 @@ class App{
     }
     
     createMsg( pos, rot ){
-        const msg = `position:${pos.x.toFixed(2)},${pos.y.toFixed(2)},${pos.z.toFixed(2)} rotation:${rot.x.toFixed(2)},${rot.y.toFixed(2)},${rot.z.toFixed(2)}`;
+        const msg = `position:${pos.x.toFixed(3)},${pos.y.toFixed(3)},${pos.z.toFixed(3)} rotation:${rot.x.toFixed(2)},${rot.y.toFixed(2)},${rot.z.toFixed(2)}`;
         return msg;
     }
     
@@ -172,10 +168,9 @@ class App{
         this.ui.update();
         if (this.renderer.xr.isPresenting){
             const pos = this.controller.getWorldPosition( this.origin );
-            // using three.js we get position and orientation of the controller -> convert it into an euler 
-            this.euler.setFromQuaternion( this.controller.getWorldQuaternion( this.quaternion ));
-            
-            const msg = this.createMsg( pos, this.euler );
+            this.euler.setFromQuaternion( this.controller.getWorldQuaternion( this.quaternion ) );
+            const rot = this.euler;
+            const msg = this.createMsg( pos, rot );
             this.ui.updateElement("msg", msg);
         }
         this.renderer.render( this.scene, this.camera );
